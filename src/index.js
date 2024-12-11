@@ -20,3 +20,8 @@ const PORT = process.env.PORT || 7002;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
+
+//Routes
+app.get("/", (req, res) => {
+  res.send("Running Server of Nihonify!");
+});
