@@ -1,5 +1,5 @@
 const express = require("express");
-const dotenv = require("dotenv").config();
+const dotenv = require("dotenv").config({ path: ".env" });
 const dbConnect = require("./config/dbConnect");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -7,21 +7,16 @@ const userRoutes = require("./routes/userRoutes");
 dbConnect();
 
 const app = express();
-
-//Middleware
 app.use(express.json());
 
-//Routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
-//Start Server
-const PORT = process.env.PORT || 7002;
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+// Root Route
+app.get("/", (req, res) => {
+  res.send("Nihonify Server is running...");
 });
 
-//Routes
-app.get("/", (req, res) => {
-  res.send("Running Server of Nihonify!");
-});
+const PORT = process.env.PORT || 7002;
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

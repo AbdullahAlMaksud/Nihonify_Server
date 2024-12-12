@@ -4,11 +4,22 @@ const User = require("../models/userModal");
 
 const register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password, email, photo, role } = req.body;
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email is already registered" });
+    }
+
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create and save the new user
     const newUser = new User({
       username,
+      email,
+      photo,
       password: hashedPassword,
       role,
     });
@@ -17,32 +28,53 @@ const register = async (req, res) => {
 
     res
       .status(201)
-      .json({ message: `User registered with username ${username}` });
+      .json({
+        message: `User registered successfully with username ${username}`,
+      });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(404)
-        .json({ message: `User with username ${username} not found` });
+        .json({ message: `User with email ${email} not found` });
     }
+
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid Credential" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.status(200).json({ token });
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        photo: user.photo,
+      },
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
 };

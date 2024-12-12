@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/admin", verifyToken, authorizedRoles("admin"), (req, res) => {
   res.json({ message: "Welcome to the admin" });
 });
+
 //Only user can access this route
 router.get(
   "/user",
@@ -14,6 +15,8 @@ router.get(
   authorizedRoles("admin", "user"),
   (req, res) => {
     res.json({ message: "Welcome to the Manager" });
+    console.log(req.body);
+    res.send("Request received");
   }
 );
 
